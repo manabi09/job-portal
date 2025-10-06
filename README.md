@@ -1,6 +1,6 @@
 # Job Portal - Indeed/Internshala Clone
 
-A modern, full-stack job portal application built with React, Node.js, Express, and MongoDB.
+A modern, full-stack job portal application built with React, Node.js, Express, and PostgreSQL.
 
 ## Features
 
