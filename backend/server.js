@@ -29,6 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   'http://localhost:5173',
+  'https://job-portal-backend-018k.onrender.com',
   'https://job-portal-9ki8u6tea-manabi-sadhukhans-projects.vercel.app'
 ].filter(Boolean);
 
