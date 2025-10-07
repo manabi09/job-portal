@@ -1,45 +1,29 @@
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+   const cloudinary = require('cloudinary').v2;
+   const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+   // Configure Cloudinary
+   cloudinary.config({
+     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+     api_key: process.env.CLOUDINARY_API_KEY,
+     api_secret: process.env.CLOUDINARY_API_SECRET,
+   });
 
-// Configure storage
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadsDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+   // Configure storage
+   const storage = new CloudinaryStorage({
+     cloudinary: cloudinary,
+     params: {
+       folder: 'job-portal',
+       allowed_formats: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'],
+       resource_type: 'auto',
+     },
+   });
 
-// File filter
-const fileFilter = (req, file, cb) => {
-  // Allowed file types
-  const allowedTypes = /pdf|doc|docx|jpg|jpeg|png/;
-  const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = allowedTypes.test(file.mimetype);
+   const upload = multer({
+     storage: storage,
+     limits: {
+       fileSize: parseInt(process.env.MAX_FILE_SIZE) || 5 * 1024 * 1024
+     },
+   });
 
-  if (mimetype && extname) {
-    return cb(null, true);
-  } else {
-    cb(new Error('Only PDF, DOC, DOCX, JPG, JPEG, and PNG files are allowed'));
-  }
-};
-
-// Configure multer
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: parseInt(process.env.MAX_FILE_SIZE) || 5 * 1024 * 1024 // 5MB default
-  },
-  fileFilter: fileFilter
-});
-
-module.exports = upload;
+   module.exports = upload;
