@@ -8,22 +8,34 @@ let sequelizeInstance = null;
  */
 const getSequelize = () => {
   if (!sequelizeInstance) {
+    const config = {
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT) || 5432,
+      dialect: 'postgres',
+      logging: process.env.NODE_ENV === 'development' ? console.log : false,
+      pool: {
+        max: 5,
+        min: 0,
+        acquire: 30000,
+        idle: 10000,
+      },
+    };
+
+    // Enable SSL for production (required by most cloud PostgreSQL providers)
+    if (process.env.NODE_ENV === 'production') {
+      config.dialectOptions = {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false // For self-signed certificates
+        }
+      };
+    }
+
     sequelizeInstance = new Sequelize(
       process.env.DB_NAME,
       process.env.DB_USER,
       String(process.env.DB_PASSWORD),
-      {
-        host: process.env.DB_HOST,
-        port: parseInt(process.env.DB_PORT) || 5432,
-        dialect: 'postgres',
-        logging: process.env.NODE_ENV === 'development' ? console.log : false,
-        pool: {
-          max: 5,
-          min: 0,
-          acquire: 30000,
-          idle: 10000,
-        },
-      }
+      config
     );
   }
   return sequelizeInstance;
